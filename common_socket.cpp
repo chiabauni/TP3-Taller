@@ -1,0 +1,188 @@
+#include "common_socket.h"
+//-------------------------------------------------------------------------------
+void Socket::_setServerAddresses(const char* service, addrinfo** results) {
+	addrinfo hints;	
+	memset(&hints, 0, sizeof(struct addrinfo));   	
+   	hints.ai_family = AF_INET;          	
+   	hints.ai_socktype = SOCK_STREAM;    	
+   	hints.ai_flags = AI_PASSIVE;             
+   	if (::getaddrinfo(NULL, service, &hints, results)) {
+   		throw Exception("Error in getaddrinfo server");
+   	} 
+}
+void Socket::_setClientAddresses(const char* host, const char* service, 
+								addrinfo** results) {
+	addrinfo hints;	
+	memset(&hints, 0, sizeof(struct addrinfo));   	
+   	hints.ai_family = AF_INET;          	
+   	hints.ai_socktype = SOCK_STREAM;    	
+   	hints.ai_flags = 0;          
+   	if (::getaddrinfo(host, service, &hints, results)) {
+   		throw Exception("Error in getaddrinfo client");
+   	} 
+}
+
+void Socket::_bind(addrinfo* results) {
+	bool connected = false;
+	struct addrinfo *ptr;
+	int temp = 0;
+	for (ptr = results; ptr != NULL && connected == false; 
+    	ptr = ptr->ai_next) {
+		temp = ::socket(ptr->ai_family, ptr->ai_socktype,
+    						ptr->ai_protocol);
+	   	if (temp == -1) {
+	   		::close(temp);
+	   		throw Exception("Error in socket, function bind");  
+	   	}
+		int val = 1;
+	   	if (::setsockopt(temp, SOL_SOCKET, SO_REUSEADDR, 
+	   		&val, sizeof(val)) == -1) {     
+	   		::close(temp);
+	   		throw Exception("Error in setsockopt, function bind"); 
+	    }
+	    if (::bind(temp, results->ai_addr, results->ai_addrlen) == -1) {
+	    	::close(temp);
+	   		throw Exception("Error in bind, function bind"); 
+	    } else {
+   			connected = true;
+   		}
+	}
+   	fd = temp;
+}
+
+void Socket::_listen() {
+	if (::listen(this->fd, QUEUE_SOCKETS) == -1) {
+	   	throw Exception("Error in listen");
+	}
+}
+
+void Socket::_connect(addrinfo* results) {
+	bool connected = false;
+	struct addrinfo *ptr;
+	int temp = 0;
+    for (ptr = results; ptr != NULL && connected == false; 
+    	ptr = ptr->ai_next) {
+    	temp = ::socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+   		if (temp == -1) {
+   			::close(temp);
+	   		throw Exception("Error in socket, function connect"); 
+   		}
+   		if (::connect(temp, ptr->ai_addr, ptr->ai_addrlen) == -1) {
+   			::close(temp);
+	   		throw Exception("Error in connect, function connect"); 
+   		} else {
+   			connected = true;
+   		}
+    }
+    fd = temp;
+}
+
+Socket::Socket(const char* host, const char* service) {
+	addrinfo* results;
+	_setClientAddresses(host, service, &results);
+	try {
+		_connect(results);
+	} catch (const Exception& e) {
+		::freeaddrinfo(results);
+		throw e;
+	}
+	::freeaddrinfo(results);
+}
+
+Socket::Socket(const char* service) {
+	addrinfo* results;
+	_setServerAddresses(service, &results);
+	try {
+		_bind(results);
+		_listen();
+	} catch (const Exception& e) {
+		::freeaddrinfo(results);
+		throw e;
+	}
+	::freeaddrinfo(results);
+
+}
+
+Socket::Socket(Socket&& other) {
+	this->fd = std::move(other.fd);
+	other.fd = -1;
+}
+Socket& Socket::operator=(Socket&& other) {
+	this->fd = std::move(other.fd);
+	other.fd = -1;
+	return *this;
+}
+
+Socket::Socket(int fd) : fd(fd) {}
+
+Socket::~Socket() {
+	if (fd == -1) return;
+	::shutdown(fd, SHUT_RDWR);
+	::close(fd);
+}
+
+Socket Socket::accept() const {
+	int accepted = ::accept(fd, NULL, NULL);
+	if (accepted == -1) {
+		throw Exception("Error in accept");
+	}
+	return Socket(accepted);
+}
+
+ssize_t Socket::send(const char* buffer, size_t buffer_size) const {
+	size_t total_sent = 0;
+	ssize_t last_sent = 0;
+	while (total_sent < buffer_size) {
+		last_sent = ::send(fd, &buffer[total_sent], buffer_size-total_sent,
+							MSG_NOSIGNAL);
+		if (last_sent == -1) {
+			throw Exception("Error in send");
+		} else if (last_sent == 0){
+			return 0;
+		} else {
+			total_sent += last_sent;
+		}
+	}
+	return total_sent;
+}
+
+ssize_t Socket::receive(char* buffer, size_t buffer_size, 
+						int& bytes_received) const {
+	size_t total_recv = 0;
+	ssize_t last_recv = 0;
+	bytes_received = 0;
+	while (total_recv < buffer_size) {
+		last_recv = ::recv(fd, &buffer[total_recv], buffer_size-total_recv, 0);
+		if (last_recv == -1) {
+			throw Exception("Error in receive");
+		} else if (last_recv == 0){
+			return 0;
+		} else {
+			total_recv += last_recv;
+			bytes_received += last_recv;
+		}
+	}
+	return total_recv;
+}
+
+void Socket::shutdown() const {
+	if (fd == -1) {
+		if (::shutdown(fd, SHUT_RDWR) != 0) {
+			throw Exception("Error in shutdown");
+		}
+	}
+}
+
+void Socket::shutdown_writing() const {
+	if (::shutdown(fd, SHUT_WR) != 0) {
+		throw Exception("Error in shutdown writing");
+	}
+}
+
+void Socket::close() {
+	if (fd == -1) {
+		if (::close(fd) == -1) {
+			throw Exception("Error in close");
+		}
+	}
+}
