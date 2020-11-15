@@ -12,7 +12,7 @@ class Accepter: public Thread {
 	std::atomic<bool> keep_accepting;
 	std::list<ClientHandler> client_list;
 
-	void _acceptClient();
+	//void _acceptClient();
 	void _joinReaper();
 	void _joinThreads();
 

@@ -32,8 +32,7 @@ class Socket{
 		ssize_t send(const char* buffer, size_t buffer_size) const;
 		ssize_t receive(char* buffer, size_t buffer_size, 
 						int& bytes_received) const;
-		void shutdown() const;
-		void shutdown_writing() const;
+		void shutdown(int how = SHUT_RDWR) const;
 		void close();
 };
 #endif

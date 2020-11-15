@@ -11,33 +11,40 @@ bool ClientHandler::isRunning() const {
 }
 
 void ClientHandler::run() {
-	try {
-		while(is_running) {
-				std::stringstream stream;
-				int status = 1;
-				int bytes_received = 0;
-				char buffer [BUFF_SIZE];
-				while (status != 0){
-					status = peer.receive(buffer, BUFF_SIZE, bytes_received);
-					for(int i = 0; i < bytes_received; i++) {
-						stream << buffer[i];
-					}
-				}
-				std::string message = processRequest(stream);
-				peer.send(message.c_str(), message.length());
-				is_running =false;
+	while(is_running) {
+		std::stringstream stream;
+		int status = 1;
+		int bytes_received = 0;
+		char buffer [BUFF_SIZE];
+		while (status != 0){
+			try {
+				status = peer.receive(buffer, BUFF_SIZE, bytes_received);
+			} catch (const std::exception& e) {
+				fprintf(stderr, "%s\n", e.what());
+			}
+			for(int i = 0; i < bytes_received; i++) {
+				stream << buffer[i];
+			}
 		}
-	} catch (const std::exception& e) {
-		fprintf(stderr, "%s\n", e.what());
+		std::string message = processRequest(stream);
+		try {
+			peer.send(message.c_str(), message.length());
+		} catch (const std::exception& e) {
+			fprintf(stderr, "%s\n", e.what());
+		}
+		is_running = false;
 	}
 }
 
 void ClientHandler::stop() {
 	try {
+		//fprintf(stderr,"[DEBUG] WILL SHUTDOWN CLIENTHANDLER PEER.\n");
 		peer.shutdown();
+		//fprintf(stderr,"[DEBUG] DONE. WILL CLOSE CLIENTHANDLER PEER.\n");
 		peer.close();
+		//fprintf(stderr,"[DEBUG] SUCCESS.\n");
 	} catch (const Exception& e){
-		fprintf(stderr,"Error while shutdown of peer.\n");
+		fprintf(stderr, "%s\n", e.what());
 	}
 }
 

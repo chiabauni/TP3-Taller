@@ -165,24 +165,19 @@ ssize_t Socket::receive(char* buffer, size_t buffer_size,
 	return total_recv;
 }
 
-void Socket::shutdown() const {
-	if (fd == -1) {
-		if (::shutdown(fd, SHUT_RDWR) != 0) {
+void Socket::shutdown(int how) const {
+	if (fd != -1) {
+		if (::shutdown(fd, how) != 0) {
 			throw Exception("Error in shutdown");
 		}
 	}
 }
 
-void Socket::shutdown_writing() const {
-	if (::shutdown(fd, SHUT_WR) != 0) {
-		throw Exception("Error in shutdown writing");
-	}
-}
-
 void Socket::close() {
-	if (fd == -1) {
+	if (fd != -1) {
 		if (::close(fd) == -1) {
 			throw Exception("Error in close");
 		}
+		fd = -1;
 	}
 }
