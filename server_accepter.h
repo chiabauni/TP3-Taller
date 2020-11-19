@@ -10,9 +10,8 @@ class Accepter: public Thread {
 	Socket socket;
 	std::string& root;
 	std::atomic<bool> keep_accepting;
-	std::list<ClientHandler> client_list;
+	std::list<ClientHandler *> client_list;
 
-	//void _acceptClient();
 	void _joinReaper();
 	void _joinThreads();
 

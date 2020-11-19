@@ -23,31 +23,29 @@ void Socket::_setClientAddresses(const char* host, const char* service,
 }
 
 void Socket::_bind(addrinfo* results) {
-	bool connected = false;
 	struct addrinfo *ptr;
 	int temp = 0;
-	for (ptr = results; ptr != NULL && connected == false; 
-    	ptr = ptr->ai_next) {
+	for (ptr = results; ptr != NULL; ptr = ptr->ai_next) {
 		temp = ::socket(ptr->ai_family, ptr->ai_socktype,
     						ptr->ai_protocol);
-	   	if (temp == -1) {
-	   		::close(temp);
-	   		throw Exception("Error in socket, function bind");  
+	   	if (temp == -1) { 
+	   		continue;
 	   	}
 		int val = 1;
 	   	if (::setsockopt(temp, SOL_SOCKET, SO_REUSEADDR, 
 	   		&val, sizeof(val)) == -1) {     
-	   		::close(temp);
-	   		throw Exception("Error in setsockopt, function bind"); 
+	   		continue;
 	    }
-	    if (::bind(temp, results->ai_addr, results->ai_addrlen) == -1) {
-	    	::close(temp);
-	   		throw Exception("Error in bind, function bind"); 
-	    } else {
-   			connected = true;
-   		}
+	    if (::bind(temp, results->ai_addr, results->ai_addrlen) == 0) {
+	    	break;
+	    } 
+	    ::close(temp);
 	}
-   	fd = temp;
+	if (results == NULL) {
+		throw Exception("Error in bind, couldn't find a node to bind");
+	} else {
+		fd = temp;
+	}
 }
 
 void Socket::_listen() {
@@ -57,24 +55,23 @@ void Socket::_listen() {
 }
 
 void Socket::_connect(addrinfo* results) {
-	bool connected = false;
 	struct addrinfo *ptr;
 	int temp = 0;
-    for (ptr = results; ptr != NULL && connected == false; 
-    	ptr = ptr->ai_next) {
+    for (ptr = results; ptr != NULL; ptr = ptr->ai_next) {
     	temp = ::socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
    		if (temp == -1) {
-   			::close(temp);
-	   		throw Exception("Error in socket, function connect"); 
+	   		continue;
    		}
-   		if (::connect(temp, ptr->ai_addr, ptr->ai_addrlen) == -1) {
-   			::close(temp);
-	   		throw Exception("Error in connect, function connect"); 
-   		} else {
-   			connected = true;
-   		}
+   		if (::connect(temp, ptr->ai_addr, ptr->ai_addrlen) == 0) {
+   			break;
+   		} 
+   		::close(temp);
     }
-    fd = temp;
+    if (results == NULL) {
+		throw Exception("Error in connect, couldn't find a node to connect");
+	} else {
+		fd = temp;
+	}
 }
 
 Socket::Socket(const char* host, const char* service) {
@@ -104,11 +101,11 @@ Socket::Socket(const char* service) {
 }
 
 Socket::Socket(Socket&& other) {
-	this->fd = std::move(other.fd);
+	this->fd = other.fd;
 	other.fd = -1;
 }
 Socket& Socket::operator=(Socket&& other) {
-	this->fd = std::move(other.fd);
+	this->fd = other.fd;
 	other.fd = -1;
 	return *this;
 }
@@ -131,9 +128,8 @@ Socket Socket::accept() const {
 
 ssize_t Socket::send(const char* buffer, size_t buffer_size) const {
 	size_t total_sent = 0;
-	ssize_t last_sent = 0;
 	while (total_sent < buffer_size) {
-		last_sent = ::send(fd, &buffer[total_sent], buffer_size-total_sent,
+		ssize_t last_sent = ::send(fd, &buffer[total_sent], buffer_size-total_sent,
 							MSG_NOSIGNAL);
 		if (last_sent == -1) {
 			throw Exception("Error in send");
@@ -149,10 +145,9 @@ ssize_t Socket::send(const char* buffer, size_t buffer_size) const {
 ssize_t Socket::receive(char* buffer, size_t buffer_size, 
 						int& bytes_received) const {
 	size_t total_recv = 0;
-	ssize_t last_recv = 0;
 	bytes_received = 0;
 	while (total_recv < buffer_size) {
-		last_recv = ::recv(fd, &buffer[total_recv], buffer_size-total_recv, 0);
+		ssize_t last_recv = ::recv(fd, &buffer[total_recv], buffer_size-total_recv, 0);
 		if (last_recv == -1) {
 			throw Exception("Error in receive");
 		} else if (last_recv == 0){

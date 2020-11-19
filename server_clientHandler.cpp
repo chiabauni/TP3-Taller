@@ -38,11 +38,8 @@ void ClientHandler::run() {
 
 void ClientHandler::stop() {
 	try {
-		//fprintf(stderr,"[DEBUG] WILL SHUTDOWN CLIENTHANDLER PEER.\n");
 		peer.shutdown();
-		//fprintf(stderr,"[DEBUG] DONE. WILL CLOSE CLIENTHANDLER PEER.\n");
 		peer.close();
-		//fprintf(stderr,"[DEBUG] SUCCESS.\n");
 	} catch (const Exception& e){
 		fprintf(stderr, "%s\n", e.what());
 	}

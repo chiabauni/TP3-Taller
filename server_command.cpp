@@ -43,12 +43,12 @@ std::unique_ptr<Command> Command::getCommand(std::string& instruction,
 	}
 }
 
-std::string Command::response(const std::string message, std::string& body){
+std::string Command::response(const std::string& message, const std::string& body){
 	std::ostringstream stream;
 	stream << message << body;
 	return stream.str();
 }
 
-std::string Command::response(const std::string message){
+std::string Command::response(const std::string& message){
 	return message;
 }

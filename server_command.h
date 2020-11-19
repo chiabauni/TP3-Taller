@@ -3,16 +3,16 @@
 #include <bits/unique_ptr.h>
 #include <string>
 #include <sstream>
-#include <map>
 #include <iostream>
+#include "dictionary.h"
 //-------------------------------------------------------------------------------
 class Command {
 	protected:
 		std::string& first_line;
 		std::string& text;
 		std::string& root;
+		DictionaryProtected dictionary;
 		bool root_posted;
-		std::map<std::string,std::string> dic;
 		static const std::string GET_ROOT;
 		static const std::string GET_RESOURSE_OK;
 		static const std::string GET_RESOURSE_FAIL;
@@ -29,9 +29,9 @@ class Command {
 													std::string& first_line,
 													std::string& text,
 													std::string& root);
-		static std::string response(const std::string message,
-									std::string& body);
-		static std::string response(const std::string message);
+		static std::string response(const std::string& message,
+									const std::string& body);
+		static std::string response(const std::string& message);
 		virtual std::string run() = 0;
 };
 #endif

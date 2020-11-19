@@ -1,37 +1,28 @@
 #include "server_accepter.h"
 #include "common_socket.h"
 //-------------------------------------------------------------------------------
-/*void Accepter::_acceptClient() {
-	Socket peer = socket.accept();
-	client_list.emplace_back(peer, root);
-	client_list.back().start();
-}*/
-
 void Accepter::_joinReaper() {
-	std::list<ClientHandler>::iterator it = client_list.begin();
-	//fprintf(stderr, "[DEBUG] _joinReaper started.\n");	
+	std::list<ClientHandler *>::iterator it = client_list.begin();	
 	while (it != client_list.end()){
-		if (!(it->isRunning())) {
-			//fprintf(stderr, "[DEBUG] One reaper to join.\n");
-			it->stop();
-			it->join();
+		if (!(*it)->isRunning()) {
+			(*it)->stop();
+			(*it)->join();
+			delete *it;
 			it = client_list.erase(it);
 		} else {
 			it++;
 		}
 	}
-	//fprintf(stderr, "[DEBUG] _joinReaper finished.\n");
 }
 
 void Accepter::_joinThreads() {
-	//fprintf(stderr, "[DEBUG] _joinThreads started.\n");
-	for (auto it = client_list.begin(); it != client_list.end();) {
-		//fprintf(stderr, "[DEBUG] One thread to join.\n");
-		it->stop();
-		it->join();
+	std::list<ClientHandler *>::iterator it;
+	for (it = client_list.begin(); it != client_list.end(); it++) {
+		(*it)->stop();
+		(*it)->join();
+		delete *it;
 		it = client_list.erase(it);
 	}
-	//fprintf(stderr, "[DEBUG] _joinThreads finished.\n");
 }
 
 Accepter::Accepter(const char* service, std::string& root) : socket(service),
@@ -40,26 +31,19 @@ Accepter::Accepter(const char* service, std::string& root) : socket(service),
 Accepter::~Accepter() {}
 
 void Accepter::run() {
-	try{
-		//fprintf(stderr, "[DEBUG] Starting accepter.\n");
+	try {
 		while (keep_accepting){
 			try {
-				//fprintf(stderr, "[DEBUG] Accepter waiting for a client...\n");
 				Socket peer = socket.accept();
-				//fprintf(stderr, "[DEBUG] Client accepted!\n");
-				client_list.emplace_back(peer, root);
-				client_list.back().start();
+				ClientHandler *client = new ClientHandler(peer, root);
+				client_list.push_back(client);
+				client->start();
 			} catch (const std::exception& e) {
-				fprintf(stderr, "[DEBUG] Exception in accepter.\n");
 				break;
 			}
-			//fprintf(stderr, "[DEBUG] Joining reaper/s...\n");
 			_joinReaper();
-			//fprintf(stderr, "[DEBUG] Reaper/s joined.\n");
 		}
-		//fprintf(stderr, "[DEBUG] Accepter joining threads...\n");
 		_joinThreads();
-		//fprintf(stderr, "[DEBUG] Threads joined. Ending accepter.\n");
 	} catch (const std::exception& e) {
 		fprintf(stderr, "%s\n", e.what());
 	}
