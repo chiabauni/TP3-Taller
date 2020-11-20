@@ -13,7 +13,17 @@ Link al repositorio: [https://github.com/chiabauni/TP3](https://github.com/chiab
 ---
 
 # Indice
-
+1. [Presentación del trabajo](#presentacion-del-trabajo)
+    * [Introducción](#introduccion)
+    * [Descripción](#descripcion)
+2. [Especificaciones provistas](#especificaciones-provistas)
+    * [Protocolo HTTP](#protocolo-http)
+    * [Restricciones](#restricciones)
+    * [Formato de linea de comandos](#formato-de-linea-de-comandos)
+    * [Entrada/Salida](#entrada/salida)
+3. [Modelo propuesto](#modelo-propuesto)
+    * [Implementación](#implementacion)
+    * [Modelo final](#modelo-final)
 ---
 
 # Presentación del trabajo
