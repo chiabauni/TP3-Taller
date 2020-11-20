@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <sstream>
 #include <errno.h>
-#include <stdio.h>//borrar
+#include <stdio.h>
 #include "../common_src/exception.h"
 #define QUEUE_SOCKETS 20
 //-------------------------------------------------------------------------------
