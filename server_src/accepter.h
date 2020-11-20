@@ -3,6 +3,7 @@
 #include <list>
 #include <string>
 #include <atomic>
+#include <iostream>
 #include "../common_src/socket.h"
 #include "../server_src/thread.h"
 #include "../server_src/clientHandler.h"

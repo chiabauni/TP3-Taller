@@ -163,7 +163,6 @@ ssize_t Socket::receive(char* buffer, size_t buffer_size,
 void Socket::shutdown(int how) const {
 	if (fd != -1) {
 		if (::shutdown(fd, how) != 0) {
-			printf("error: %s\n", strerror(errno));
 			throw Exception("Error in shutdown");
 		}
 	}

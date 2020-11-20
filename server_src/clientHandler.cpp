@@ -20,7 +20,7 @@ void ClientHandler::run() {
 			try {
 				status = peer.receive(buffer, BUFF_SIZE, bytes_received);
 			} catch (const std::exception& e) {
-				fprintf(stderr, "%s\n", e.what());
+				std::cerr << e.what() << std::endl;
 			}
 			for(int i = 0; i < bytes_received; i++) {
 				stream << buffer[i];
@@ -30,7 +30,7 @@ void ClientHandler::run() {
 		try {
 			peer.send(message.c_str(), message.length());
 		} catch (const std::exception& e) {
-			fprintf(stderr, "%s\n", e.what());
+			std::cerr << e.what() << std::endl;
 		}
 		peer.shutdown(SHUT_WR);
 		is_running = false;

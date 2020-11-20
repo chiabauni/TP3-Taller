@@ -11,10 +11,10 @@ int main(int argc, char* argv[]) {
 		Client client(host, service);
 		client.run();
 	} catch (const Exception& e){
-		std::cerr << e.what() << "\n";
+		std::cerr << e.what() << std::endl;
 		return 2;
 	} catch (...) {
-		std::cerr << "Unknown error" << "\n";
+		std::cerr << "Unknown error" << std::endl;
 		return 3;
 	}
 	return 0;

@@ -29,9 +29,9 @@ int main(int argc, char* argv[]) {
 
 	try {
 		Server server(service, root);
-		server.run();
+		server();
 	} catch (const Exception& e) {
-		std::cerr << e.what() << "\n";
+		std::cerr << e.what() << std::endl;
 		return 3;
 	} catch (...) {
 		std::cerr << "Unknown error" << "\n";

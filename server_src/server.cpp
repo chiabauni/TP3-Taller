@@ -5,7 +5,7 @@ Server::Server(const char* service, std::string& root) :
 
 Server::~Server() {}
 
-void Server::run() {
+void Server::operator()() {
 	accepter.start();
 	char input;
 	do {

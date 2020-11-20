@@ -43,7 +43,7 @@ void Accepter::run() {
 		}
 		_joinThreads();
 	} catch (const std::exception& e) {
-		fprintf(stderr, "%s\n", e.what());
+		std::cerr << e.what() << std::endl;
 	}
 }
 
@@ -53,6 +53,7 @@ void Accepter::stop() {
 		socket.shutdown();
 		socket.close();
 	} catch (const Exception& e) {
-		fprintf(stderr, "Error while shutdown of accepter.\n");
+		std::cerr << "Error while shutingdown accepter: "<< e.what() 
+														<< std::endl;
 	}
 }

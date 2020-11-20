@@ -17,6 +17,6 @@ class Server {
 		Server(Server&& other) = delete;
 		Server& operator=(Server&& other) = delete;
 
-		void run();
+		void operator()();
 };
 #endif
