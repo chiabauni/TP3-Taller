@@ -13,26 +13,26 @@ Link al repositorio: [https://github.com/chiabauni/TP3](https://github.com/chiab
 ---
 
 # Indice
-1. [Presentación del trabajo](#presentacion-del-trabajo)
+1. [Presentación del trabajo](#presentacion)
     * [Introducción](#introduccion)
     * [Descripción](#descripcion)
 2. [Especificaciones provistas](#especificaciones-provistas)
     * [Protocolo HTTP](#protocolo-http)
     * [Restricciones](#restricciones)
-    * [Formato de linea de comandos](#formato-de-linea-de-comandos)
-    * [Entrada/Salida](#entrada/salida)
+    * [Formato de linea de comandos](#formato)
+    * [Entrada/Salida](#entrada)
 3. [Modelo propuesto](#modelo-propuesto)
     * [Implementación](#implementacion)
     * [Modelo final](#modelo-final)
 ---
 
-# Presentación del trabajo
+# Presentación del trabajo <a name="presentacion"></a>
 
-## Introducción
+## Introducción <a name="introduccion"></a>
 
 Este trabajo practico consiste en desarrollar dos programas: un cliente y un servidor. El programa emisor deberá leer un mensaje por entrada estándar siguiendo el protocolo HTTP, enviárselo al servidor y esperar su respuesta. El servidor deberá poder aceptar varios clientes a la vez, recibir y responder el mensaje de cada uno e imprimir el petitorio por salida estándar.
 
-## Descripción
+## Descripción <a name="descripcion"></a>
 
 En este trabajo practico se implementará un programa cliente y un servidor multi-cliente que se comuniquen a través de sockets TCP manejando los petitorios según el formato HTTP.
 
@@ -69,7 +69,7 @@ La siguiente es una lista de restricciones técnicas exigidas:
 - Se debe realizar una limpieza de clientes finalizados cada vez que se conecta uno nuevo.
 - No se debe usar sockets no bloqueantes ni leer de a 1 carácter.
 
-## Formato de Línea de Comandos
+## Formato de Línea de Comandos <a name="formato"></a>
 
 Servidor: `./server <puerto/servicio> <root_file>` donde `<root_file>` es el puerto TCP del cual el servidor deberá escuchar las conexiones entrantes.
 
@@ -77,7 +77,7 @@ Cliente: `./cliente <ip/hostname> <puerto/servicio>` donde `<ip/hostname>` es la
 
 Ademas recibirá por entrada standard el texto correspondiente a un petitorio HTTP, el cuál leerá y enviará por socket hasta llegar a EOF.
 
-## Entrada/Salida
+## Entrada/Salida <a name="entrada"></a>
 
 El servidor devolverá 0 si su ejecución fue exitosa. Si la cantidad de parámetros es incorrecta, se cancela la
 ejecución y se devuelve 1. El cliente deberá devolver siempre 0.
@@ -91,7 +91,7 @@ El cliente recibirá por entrada estándar el petitorio para enviar al servidor 
 
 # Modelo propuesto
 
-## Implementación
+## Implementación <a name="implementacion"></a>
 
 A la hora de la resolución del trabajo planteado, primero comencé a diseñar el server multi-cliente, para poder primero crear un server que vaya aceptando clientes de manera concurrente. Por lo que al comienzo no le di mucha importancia al formato de los mensajes a enviar. Con este primer objetivo en mente cree las siguientes clases:
 
