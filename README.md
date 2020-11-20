@@ -14,26 +14,11 @@ Link al repositorio: [https://github.com/chiabauni/TP3](https://github.com/chiab
 
 # Indice
 
-1. Presentación del trabajo
-    - Introducción
-    - Descripción
-2. Especificaciones provistas
-    - Protocolo HTTP
-    - Servidor
-    - Restricciones
-    - Formato de Linea de Comandos
-    - Entrada/Salida
-3. Modelo propuesto
-    - Implementacion
-    - Diseño final
-
 ---
 
 # Presentación del trabajo
 
 ## Introducción
-
-**No llegue a terminar la implementacion de este TP3 para la fecha de entrega.**
 
 Este trabajo practico consiste en desarrollar dos programas: un cliente y un servidor. El programa emisor deberá leer un mensaje por entrada estándar siguiendo el protocolo HTTP, enviárselo al servidor y esperar su respuesta. El servidor deberá poder aceptar varios clientes a la vez, recibir y responder el mensaje de cada uno e imprimir el petitorio por salida estándar.
 
@@ -47,7 +32,21 @@ En este trabajo practico se implementará un programa cliente y un servidor mult
 
 ## Protocolo HTTP
 
-## Servidor
+El protocolo HTTP posee el siguiente formato
+
+- La primer linea contiene la forma: `<metodo> <recurso> <protocolo>` .
+- Las siguientes lineas tienen la forma :`<clave>:<valor>`
+- Una linea vacía indica el fin de la cabecera.
+- El cuerpo (“body”) del petitorio si el método posee uno.
+
+En este caso en particular que vamos a implementar, solo nos vamos a concentrar en los métodos GET y POST que serán los únicos soportados por este programa. Ademas vamos a asumir que los petitorios siempre respetan el protocolo.
+Para simplificar el procesamiento, en el protocolo se cambiaron los saltos de linea “\r\n” por “\n”. Las siguientes son las respuestas a implementar para los distintos métodos.
+
+1. GET/ : la respuesta será “HTTP 200 OK\nContent-Type: text/html\n\n” seguido del contenido del `<root_file>` .
+2. GET/<recurso> : si el recurso existe la respuesta será “HTTP 200 OK\n\n” seguido del contenido del <recurso>, si el recurso no existe la respuesta será “HTTP 404 NOT FOUND\n\n”.
+3. POST/ : la respuesta será “HTTP 403 FORBIDDEN\n\n”.
+4. POST/<recurso> : se creará el recurso correspondiente a la ruta, y su contenido será el "body" del mensaje.
+5. Otro método : la respuesta será “HTTP 405 METHOD NOT ALLOWED\n\n”: 
 
 ## Restricciones
 
@@ -64,7 +63,7 @@ La siguiente es una lista de restricciones técnicas exigidas:
 
 Servidor: `./server <puerto/servicio> <root_file>` donde `<root_file>` es el puerto TCP del cual el servidor deberá escuchar las conexiones entrantes.
 
-Cliente: `./cliente <ip/hostname> <puerto/servicio>` donde `<ip/hostname>` es la dreccion ip de la maquina donde el servidor esta corriendo al cual el cliente se conectará 
+Cliente: `./cliente <ip/hostname> <puerto/servicio>` donde `<ip/hostname>` es la dirección ip de la maquina donde el servidor esta corriendo al cual el cliente se conectará 
 
 Ademas recibirá por entrada standard el texto correspondiente a un petitorio HTTP, el cuál leerá y enviará por socket hasta llegar a EOF.
 
@@ -93,18 +92,20 @@ A la hora de la resolución del trabajo planteado, primero comencé a diseñar e
 - **Lock**:  para lograr encapsulamiento y mayor legibilidad, generamos la clase Lock, que se encarga de bloquear o desbloquear según corresponda un mutex.
 - **Socket**: esta clase nos permite encapsular los métodos necesarios para permitir la conexión Cliente-Servidor. Principalmente, el socket se conforma por un file descriptor que lo identifica.
 
-AGREGAR IMAGEN
+![diagramas/imagen1.png](diagramas/imagen1.png)
 
 Una vez que esta primera parte funciono correctamente, comencé con la implementación del protocolo HTTP. Para esto fue necesario crear las siguientes clases:
 
 - **Client**: esta clase se instancia cuando se ejecuta el programa cliente, y es el encargado de manejar el flujo de ese programa. Esta clase tiene un socket propio, con el que se conectaría al servidor. Ademas envia una mensaje al servidor y recibe su respuesta.
 - **Command**: esta es una clase abstracta que se encarga de procesar los mensaje recibidos y enviar la respuesta correcta.
-- **CommandGet**: Implementa la clase Command cuando se trata del comando GET.
-- **CommandPost**: Implementa la clase Command cuando se trata del comando POST.
-- **CommandUnsupported**: Implementa la clase Command cuando se trata de un comando invalido.
+- **CommandGet**: implementa la clase Command cuando se trata del comando GET.
+- **CommandPost**: implementa la clase Command cuando se trata del comando POST.
+- **CommandUnsupported**: implementa la clase Command cuando se trata de un comando invalido.
+- **DictionaryProtected**: esta clase cuenta con una Critical Section la cual se debe proteger ya que se trata de un recurso compartido por los hilos. Por este motivo el mecanismo utilizado para la protección en este TP son los mutex. En esta clase "monitor" la Critical Section esta compuesta por la función getValueDictionary() que se encarga de, dada una key devolver el valor asignado a la misma; y la función insertValueDictionary() que se encarga de agregar al diccionario una key con su valor.
+- **Exception**: clase utilizada a la hora de lanzar una excepción.
 
 ## Modelo final
 
-El diseño final consta de 10 clases con responsabilidades claras y un acoplamiento razonable. Los mismos se muestran a continuación:
+El diseño final consta de 10 clases(sin incluir clase Exception) con responsabilidades claras y un acoplamiento razonable. Los mismos se muestran a continuación:
 
-AGREGAR IMAGEN
+![diagramas/imagen2.png](diagramas/imagen2.png)
